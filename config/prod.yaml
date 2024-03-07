@@ -1,0 +1,123 @@
+mysql:
+  dsn: root:123456@tcp(103.143.11.116:3305)/crypto?charset=utf8mb4&parseTime=True&loc=Local
+
+binanceApiKey: UHX1iqrKxSS40o7KZkzRAOc3ABpfFG3fzidEY5fTVkTdTtuQ6FLk0FTCLUFIQNEA
+binanceSecretKey: PjmFJPSz19Rb5EooVkGE3RZolfJWCSfRCw0zwRpJy1vgD0HgCX3HIbTVeoU3tPML
+binanceBaseURL: https://api.binance.com"
+#riskControlRule:
+#  aml:
+#    baseInfo:
+#      age:
+#        18: 1
+#        41: 2
+#        66: 3
+#      occupation:
+#        employed: 0
+#        self-employed: 1
+#        student: 2
+#        Retired: 1
+#        Unemployed: 3
+#      expectedYearlyTradeVolume:
+#        0: 0
+#        15000: 1
+#        100000: 2
+#        300000: 2
+#        750000: 3
+#      industry:
+#        Education: 0
+#        Information_technology: 1
+#        Agriculture: 1
+#        Arts_and_Media: 1
+#        Entertainment: 1
+#        Food_and_hospitality: 1
+#        Construction_or_real_estate: 3
+#        Defence: 3
+#        Energy_(Oil&Gas): 3
+#        Financial_Services: 3
+#        Casino_or_gaming: 3
+#        Other_industries: 2
+#      sourceOfFunds:
+#      citizenship:
+#        Low_Risk: 1
+#        Medium_Risk: 2
+#        High_Risk: 5
+#        Banned: 20
+#      pep:
+#        Yes: 7000
+#        Potential_match: 13
+#        No: 0
+#      sanctions:
+#        Yes: 9999
+#        Potential_match: 13
+#        No: 0
+#      adverseMedia:
+#        True_Positive: 4000
+#        Potential_match: 13
+#        No: 0
+#    tradeInfo:
+#      pendingOrders:
+#        0: 1
+#        50000: 2
+#        100000: 3
+#      total12mTradeVolume:
+#        0: 1
+#        100000: 2
+#        300000: 3
+#        750000: 4
+#      lengthOfBusinessRelationship:
+#        0: 3
+#        1: 2
+#        12: 1
+#      payerBankCountry: -3
+#      scoreTradeLimit:
+#        0: 50000.00
+#        16: 25000.00
+#        28: 7500.00
+#        38: 500.00
+#        999: 0
+#  fraud:
+#    stepOne:
+#      binance:
+#      caseOne:
+#          registerDay: 1
+#          traadedBefore30days: 10
+#          completedOrderNumOfLatest30day: 2
+#      caseTwo:
+#          registerDay: 0.25
+#          traadedBefore30days: 10
+#          completedOrderNumOfLatest30day: 2
+#      okx:
+#         caseOne:
+#            registerDay: 2
+#            completedOrderNum: 20
+#         caseTwo:
+#            registerDay: 1
+#            completedOrderNum: 10
+#         caseThree:
+#            registerDay: 1
+#            completedOrderNum: 10
+#         caseFour:
+#            registerDay: 0.5
+#            completedOrderNum: 5
+#         caseFive:
+#            registerDay: 0.05
+#            completedOrderNum: 0
+#    stepTwo:
+#      age:
+#        45: -100
+#        55: -300
+#        65: -500
+#        75: -700
+#        85: -900
+#    stepThree:
+#      earliestOrder:
+#        90: 100
+#        120: 150
+#        150: 200
+#        180: 300
+#        210: 400
+#        240: 500
+#    stepFour:
+#      isGuided:
+#        Yes: -100
+#        No: 0
