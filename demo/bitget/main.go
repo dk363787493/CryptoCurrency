@@ -19,7 +19,8 @@ type Order struct {
 var spotCli *v1.SpotOrderClient
 var cli *client.BitgetApiClient
 
-var symbol = "NESSUSDT_SPBL"
+var symbol = "BTCUSDT_SPBL"
+var order = "1111111"
 
 const layout = "2006-01-02 15:04:05"
 
@@ -60,14 +61,24 @@ func TimeSleep() {
 
 func Start() (error, int) {
 	//buy order
-	order, err := MakertBuyOrder()
+	var err error
+	if order == "" {
+		order, err = MakertBuyOrder()
+	}
 	if err != nil {
 		fmt.Printf("err:%s\n", err.Error())
 		return err, 1
 	}
 	// get order info
 	o, err := GetOrder(order)
+	for i := 0; i < 3; i++ {
+		if err == nil {
+			break
+		}
+		o, err = GetOrder(order)
+	}
 	if err != nil {
+		fmt.Println("err:", err.Error())
 		return err, 2
 	}
 
@@ -84,7 +95,6 @@ func init() {
 	spotCli.BitgetRestClient.ApiKey = "bg_8bb5b03eb0f08065b0442560441ed912"
 	spotCli.BitgetRestClient.ApiSecretKey = "a43174b22a98f0195f6d4ac887707210b3168cca92c44ae4ac6449ed4566d505"
 	spotCli.BitgetRestClient.Passphrase = "Bsdk19901214123"
-
 	cli = new(client.BitgetApiClient).Init()
 	cli.BitgetRestClient.ApiKey = "bg_8bb5b03eb0f08065b0442560441ed912"
 	cli.BitgetRestClient.ApiSecretKey = "a43174b22a98f0195f6d4ac887707210b3168cca92c44ae4ac6449ed4566d505"
@@ -92,14 +102,8 @@ func init() {
 }
 
 func MakertBuyOrder() (string, error) {
-	//client := new(v1.SpotOrderClient).Init()
-	//client.BitgetRestClient.ApiKey = "bg_8bb5b03eb0f08065b0442560441ed912"
-	//client.BitgetRestClient.ApiSecretKey = "a43174b22a98f0195f6d4ac887707210b3168cca92c44ae4ac6449ed4566d505"
-	//
-	//client.BitgetRestClient.Passphrase = "Bsdk19901214123"
 
 	params := make(map[string]string)
-	//params["symbol"] = "WENUSDT_SPBL"
 	params["symbol"] = symbol
 	params["side"] = "buy"
 	params["orderType"] = "market"
@@ -108,10 +112,10 @@ func MakertBuyOrder() (string, error) {
 
 	resp, err := spotCli.PlaceOrder(params)
 	if err != nil {
-		println(err.Error())
+		fmt.Println("err:", err.Error())
 		return "", err
 	}
-	fmt.Println(resp)
+	fmt.Println("buy order:", resp)
 	if gjson.Parse(resp).Get("code").String() != "00000" {
 		return "", fmt.Errorf("err when buy order,code:%s", gjson.Parse(resp).Get("code").String())
 	}
@@ -132,10 +136,10 @@ func LimitSellOrder(o Order) error {
 
 	resp, err := spotCli.PlaceOrder(params)
 	if err != nil {
-		println(err.Error())
+		fmt.Println("err:", err.Error())
 		return err
 	}
-
+	fmt.Printf("sell param:%+v\n", params)
 	fmt.Println(resp)
 	return nil
 }
@@ -147,19 +151,34 @@ func GetOrder(orderId string) (Order, error) {
 
 	resp, err := cli.Post("/api/spot/v1/trade/orderInfo", params)
 	if err != nil {
-		println(err.Error())
+		fmt.Println(err.Error())
 		return Order{}, err
 	}
-	fmt.Println(resp)
 	r := gjson.Parse(resp)
-	if r.Get("code").String() != "00000" {
-		return Order{}, fmt.Errorf("err when query order,code:%s", r.Get("code").String())
+	code := r.Get("code").String()
+
+	if code != "00000" {
+		fmt.Printf("order info:%s\n", r)
+		err = fmt.Errorf("err when query order,code:%s", r.Get("code").String())
+		return Order{}, err
 	}
-	subR := r.Get("data").Array()[0]
+	datas := r.Get("data").Array()
+	if len(datas) <= 0 {
+		err = fmt.Errorf("no data when get data ,orderId:%s", orderId)
+		return Order{}, err
+	}
+	subR := datas[0]
+	status := subR.Get("status").String()
+	if !(status == "filled" || status == "full_fill") {
+		fmt.Printf("order info:%s\n", r)
+		err = fmt.Errorf("err when query order,status:%s", status)
+		return Order{}, err
+	}
+
 	priceStr := subR.Get("fillPrice").String()
 
 	quantityStr := subR.Get("fillQuantity").String()
-
+	fmt.Println("success getting order info:", r.String())
 	return Order{
 		Price:    priceStr,
 		Quantity: quantityStr,

@@ -6,6 +6,7 @@ require (
 	bitget v0.0.0
 	github.com/binance/binance-connector-go v0.5.2
 	github.com/gorilla/websocket v1.5.0
+	github.com/shopspring/decimal v1.3.1
 	github.com/spf13/viper v1.18.2
 	github.com/tidwall/gjson v1.17.1
 	golang.org/x/exp v0.0.0-20240213143201-ec583247a57a
@@ -26,7 +27,6 @@ require (
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
-	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
@@ -42,4 +42,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace bitget => /Users/vincent/GolandProjects/v3-bitget-api-sdk/bitget-golang-sdk-api
+replace bitget => /Users/zhangjinge/GolandProjects/v3-bitget-api-sdk/bitget-golang-sdk-api
