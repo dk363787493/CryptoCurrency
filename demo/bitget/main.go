@@ -3,6 +3,7 @@ package main
 import (
 	"bitget/pkg/client"
 	v1 "bitget/pkg/client/v1"
+	"errors"
 	"fmt"
 	"github.com/shopspring/decimal"
 	"github.com/tidwall/gjson"
@@ -19,16 +20,19 @@ type Order struct {
 var spotCli *v1.SpotOrderClient
 var cli *client.BitgetApiClient
 
-var symbol = "BTCUSDT_SPBL"
-var order = "1111111"
+var symbol = "ORBKUSDT_SPBL"
+var profitRate = 0.1
 
 const layout = "2006-01-02 15:04:05"
 
+// success orderId
+var orderId = ""
+
 func main() {
 
-	//TimeSleep()
+	TimeSleep()
 
-	for i := 0; i < 6; i++ {
+	for i := 0; i < 10; i++ {
 		err, _ := Start()
 		if err == nil {
 			break
@@ -38,7 +42,7 @@ func main() {
 }
 
 func TimeSleep() {
-	timeStr := "2024-03-06 19:00:00"
+	timeStr := "2024-03-11 17:30:00"
 
 	location, err := time.LoadLocation("Asia/Shanghai")
 	if err != nil {
@@ -52,37 +56,42 @@ func TimeSleep() {
 		return
 	}
 	fmt.Println("Parsed time in UTC+8:", localTime)
-	sleep := localTime.Sub(time.Now()).Seconds() - 0.01
+	//100  300 millsec
+	sleep := localTime.Sub(time.Now()).Milliseconds() - 300
 	if sleep < 0 {
 		return
 	}
-	time.Sleep(time.Duration(sleep) * time.Second)
+	fmt.Println("sleep(ms):", sleep)
+	time.Sleep(time.Duration(sleep) * time.Millisecond)
 }
 
 func Start() (error, int) {
 	//buy order
 	var err error
-	if order == "" {
-		order, err = MakertBuyOrder()
+
+	if orderId == "" {
+		orderId, err = MakertBuyOrder()
 	}
+
 	if err != nil {
 		fmt.Printf("err:%s\n", err.Error())
 		return err, 1
 	}
 	// get order info
-	o, err := GetOrder(order)
-	for i := 0; i < 3; i++ {
+	o, err := GetOrder(orderId)
+	//o, err := MockGetOrder(order)
+	for i := 0; i < 5; i++ {
+		o, err = GetOrder(orderId)
 		if err == nil {
 			break
 		}
-		o, err = GetOrder(order)
 	}
 	if err != nil {
-		fmt.Println("err:", err.Error())
 		return err, 2
 	}
-
+	fmt.Printf("sell order:%+v\n", o)
 	// make a limit sell order
+
 	err = LimitSellOrder(o)
 	if err != nil {
 		return err, 3
@@ -95,6 +104,7 @@ func init() {
 	spotCli.BitgetRestClient.ApiKey = "bg_8bb5b03eb0f08065b0442560441ed912"
 	spotCli.BitgetRestClient.ApiSecretKey = "a43174b22a98f0195f6d4ac887707210b3168cca92c44ae4ac6449ed4566d505"
 	spotCli.BitgetRestClient.Passphrase = "Bsdk19901214123"
+
 	cli = new(client.BitgetApiClient).Init()
 	cli.BitgetRestClient.ApiKey = "bg_8bb5b03eb0f08065b0442560441ed912"
 	cli.BitgetRestClient.ApiSecretKey = "a43174b22a98f0195f6d4ac887707210b3168cca92c44ae4ac6449ed4566d505"
@@ -104,6 +114,7 @@ func init() {
 func MakertBuyOrder() (string, error) {
 
 	params := make(map[string]string)
+	//params["symbol"] = "WENUSDT_SPBL"
 	params["symbol"] = symbol
 	params["side"] = "buy"
 	params["orderType"] = "market"
@@ -112,19 +123,20 @@ func MakertBuyOrder() (string, error) {
 
 	resp, err := spotCli.PlaceOrder(params)
 	if err != nil {
-		fmt.Println("err:", err.Error())
+		println(err.Error())
 		return "", err
 	}
-	fmt.Println("buy order:", resp)
 	if gjson.Parse(resp).Get("code").String() != "00000" {
-		return "", fmt.Errorf("err when buy order,code:%s", gjson.Parse(resp).Get("code").String())
+		return "", fmt.Errorf("err when buy order,%s", gjson.Parse(resp).String())
 	}
 	order := gjson.Parse(resp).Get("data.orderId").String()
+	fmt.Printf("success orderId:%s,resp:%s \n", order, resp)
 	return order, err
 }
 
 func LimitSellOrder(o Order) error {
-	priceStr := CaculteSellPrice(o.Price, 1.5)
+	priceStr := CaculteSellPrice(o.Price, profitRate+1)
+	qantityeStr := CaculteSellQantity(o.Quantity)
 	params := make(map[string]string)
 	//params["symbol"] = "WENUSDT_SPBL"
 	params["symbol"] = symbol
@@ -132,53 +144,47 @@ func LimitSellOrder(o Order) error {
 	params["orderType"] = "limit"
 	params["force"] = "normal"
 	params["price"] = priceStr
-	params["quantity"] = o.Quantity
+	params["quantity"] = qantityeStr
 
 	resp, err := spotCli.PlaceOrder(params)
 	if err != nil {
-		fmt.Println("err:", err.Error())
+		println(err.Error())
 		return err
 	}
-	fmt.Printf("sell param:%+v\n", params)
-	fmt.Println(resp)
+	fmt.Printf("sell order,priceStr:%s,qantityeStr:%s", priceStr, qantityeStr)
+	fmt.Printf("success sell order:%s\n", resp)
 	return nil
 }
 
 func GetOrder(orderId string) (Order, error) {
-
+	if orderId == "" {
+		return Order{}, errors.New("err: orderId can not be empty")
+	}
 	params := make(map[string]string)
 	params["orderId"] = orderId
 
 	resp, err := cli.Post("/api/spot/v1/trade/orderInfo", params)
 	if err != nil {
-		fmt.Println(err.Error())
+		println(err.Error())
 		return Order{}, err
 	}
 	r := gjson.Parse(resp)
-	code := r.Get("code").String()
-
-	if code != "00000" {
-		fmt.Printf("order info:%s\n", r)
-		err = fmt.Errorf("err when query order,code:%s", r.Get("code").String())
-		return Order{}, err
+	if r.Get("code").String() != "00000" {
+		return Order{}, fmt.Errorf("err when query order,%s", r.String())
 	}
-	datas := r.Get("data").Array()
-	if len(datas) <= 0 {
-		err = fmt.Errorf("no data when get data ,orderId:%s", orderId)
-		return Order{}, err
+	dataArr := r.Get("data").Array()
+	if len(dataArr) <= 0 {
+		return Order{}, fmt.Errorf("err: get order info,orderId:%s", orderId)
 	}
-	subR := datas[0]
+	subR := r.Get("data").Array()[0]
 	status := subR.Get("status").String()
-	if !(status == "filled" || status == "full_fill") {
-		fmt.Printf("order info:%s\n", r)
-		err = fmt.Errorf("err when query order,status:%s", status)
-		return Order{}, err
+	if status != "full_fill" {
+		return Order{}, fmt.Errorf("err: get order info,orderId:%s,status:%s", orderId, status)
 	}
-
 	priceStr := subR.Get("fillPrice").String()
-
 	quantityStr := subR.Get("fillQuantity").String()
-	fmt.Println("success getting order info:", r.String())
+	fmt.Printf("get order info:%s\n", r.String())
+
 	return Order{
 		Price:    priceStr,
 		Quantity: quantityStr,
@@ -188,6 +194,9 @@ func GetOrder(orderId string) (Order, error) {
 func ParseSale(f string) float64 {
 	trim := strings.Trim(f, "0")
 	split := strings.Split(trim, ".")
+	if len(split) < 2 {
+		return 0.00
+	}
 	s := split[1]
 	var builder strings.Builder
 	builder.WriteString("0.")
@@ -211,4 +220,26 @@ func CaculteSellPrice(price string, factor float64) string {
 	i := pp.Div(scaleDecimal).IntPart()
 	dd := decimal.NewFromInt(i).Mul(scaleDecimal)
 	return dd.String()
+}
+
+func CaculteSellQantity(qantity string) string {
+	scale := ParseSale(qantity)
+	qantityDecimal, _ := decimal.NewFromString(qantity)
+	scaleDecimal := decimal.NewFromFloat(scale)
+	// 扣除0.1%点
+	pp := qantityDecimal.Mul(decimal.NewFromFloat(0.999))
+	i := pp.Div(scaleDecimal).IntPart()
+	dd := decimal.NewFromInt(i).Mul(scaleDecimal)
+	return dd.String()
+}
+
+func MockGetOrder(orderId string) (Order, error) {
+
+	return Order{
+		Price:    "1.0002310010",
+		Quantity: "0.000234",
+	}, nil
+}
+func MockBuy() (string, error) {
+	return "1111011", nil
 }
