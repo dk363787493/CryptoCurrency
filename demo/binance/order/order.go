@@ -26,7 +26,7 @@ func NewOrder() {
 		Price(61500).
 		Quantity(0.00000100).
 		Do(context.Background())
-	//Quantity(0.001).
+	//SellQuantity(0.001).
 	//newOrder, err := client.NewCreateOrderService().Symbol("BTCAAUSDT").
 	//	Side("BUY").Type("MARKET").QuoteOrderQty(10).
 	//	Do(context.Background())

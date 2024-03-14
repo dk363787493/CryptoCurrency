@@ -20,8 +20,8 @@ type Order struct {
 var spotCli *v1.SpotOrderClient
 var cli *client.BitgetApiClient
 
-var symbol = "ORBKUSDT_SPBL"
-var profitRate = 0.1
+var symbol = "BTCUSDT_SPBL"
+var profitRate = 0.15
 
 const layout = "2006-01-02 15:04:05"
 
@@ -30,7 +30,7 @@ var orderId = ""
 
 func main() {
 
-	TimeSleep()
+	//TimeSleep()
 
 	for i := 0; i < 10; i++ {
 		err, _ := Start()
@@ -80,12 +80,15 @@ func Start() (error, int) {
 	// get order info
 	o, err := GetOrder(orderId)
 	//o, err := MockGetOrder(order)
-	for i := 0; i < 5; i++ {
-		o, err = GetOrder(orderId)
-		if err == nil {
-			break
+	if err != nil {
+		for i := 0; i < 5; i++ {
+			o, err = GetOrder(orderId)
+			if err == nil {
+				break
+			}
 		}
 	}
+
 	if err != nil {
 		return err, 2
 	}
@@ -212,8 +215,17 @@ func ParseSale(f string) float64 {
 	return ff
 }
 
+func ParseSalePrice() float64 {
+	return 0.0001
+}
+
+func ParseSaleQantity() float64 {
+	return 0.01
+}
+
 func CaculteSellPrice(price string, factor float64) string {
-	scale := ParseSale(price)
+	//scale := ParseSale(price)
+	scale := ParseSalePrice()
 	priceDecimal, _ := decimal.NewFromString(price)
 	scaleDecimal := decimal.NewFromFloat(scale)
 	pp := priceDecimal.Mul(decimal.NewFromFloat(factor))
@@ -223,7 +235,8 @@ func CaculteSellPrice(price string, factor float64) string {
 }
 
 func CaculteSellQantity(qantity string) string {
-	scale := ParseSale(qantity)
+	//scale := ParseSale(qantity)
+	scale := ParseSaleQantity()
 	qantityDecimal, _ := decimal.NewFromString(qantity)
 	scaleDecimal := decimal.NewFromFloat(scale)
 	// 扣除0.1%点

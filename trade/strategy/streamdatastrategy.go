@@ -107,7 +107,7 @@ func (t *MoveAvgStrategy) ExecuteBuyStrategy(param ...interface{}) *Order {
 //	t.Status.Store(1)
 //	o := &Order{
 //		Symbol: "BTCUSDT",
-//		Price:  price,
+//		SellPrice:  price,
 //		Side:   0,
 //	}
 //	// 修改状态
