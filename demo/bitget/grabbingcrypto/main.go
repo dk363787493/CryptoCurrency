@@ -7,33 +7,78 @@ import (
 
 func main() {
 	s1 := &task.GrabbingTask{
-		ProfitRate:    0.05,
+		ProfitRate:    0.03,
 		ApiKey:        "bg_8bb5b03eb0f08065b0442560441ed912",
 		SecretKey:     "a43174b22a98f0195f6d4ac887707210b3168cca92c44ae4ac6449ed4566d505",
 		Passphrase:    "Bsdk19901214123",
-		Symbol:        "BTCUSDT",
-		Amout:         "6",
-		PriceScale:    0.01,
-		QuantityScale: 0.000001,
-		ActionTime:    "2024-03-14 22:59:00",
-		SubTime:       200,
+		Symbol:        "ZKUSDT",
+		Amout:         "10",
+		PriceScale:    0.001,
+		QuantityScale: 0.01,
+		ActionTime:    "2024-03-19 18:00:00",
+		//180(L)
+		SubTime: 220,
 	}
+
 	s2 := &task.GrabbingTask{
-		ProfitRate:    0.05,
-		ApiKey:        "bg_02235de1865699e959ab82d4baf5dfd3",
-		SecretKey:     "d8fc4dfe4dff1a11a0c8f8c09b7d24ef3cefabc8539c32fc2e99e97a8cfe607a",
+		ProfitRate:    0.03,
+		ApiKey:        "bg_8bb5b03eb0f08065b0442560441ed912",
+		SecretKey:     "a43174b22a98f0195f6d4ac887707210b3168cca92c44ae4ac6449ed4566d505",
 		Passphrase:    "Bsdk19901214123",
-		Symbol:        "ETHUSDT",
-		Amout:         "6",
-		PriceScale:    0.01,
-		QuantityScale: 0.0001,
-		ActionTime:    "2024-03-14 23:16:00",
-		SubTime:       200,
+		Symbol:        "ZKUSDT",
+		Amout:         "10",
+		PriceScale:    0.001,
+		QuantityScale: 0.01,
+		ActionTime:    "2024-03-19 18:00:00",
+		//200
+		SubTime: 190,
 	}
+	//s3 := &task.GrabbingTask{
+	//	ProfitRate:    0.06,
+	//	ApiKey:        "bg_8bb5b03eb0f08065b0442560441ed912",
+	//	SecretKey:     "a43174b22a98f0195f6d4ac887707210b3168cca92c44ae4ac6449ed4566d505",
+	//	Passphrase:    "Bsdk19901214123",
+	//	Symbol:        "SLERFUSDT",
+	//	Amout:         "10",
+	//	PriceScale:    0.0001,
+	//	QuantityScale: 0.01,
+	//	ActionTime:    "2024-03-18 18:00:00",
+	//	//250
+	//	SubTime: 100,
+	//}
+	//s4 := &task.GrabbingTask{
+	//	ProfitRate:    0.06,
+	//	ApiKey:        "bg_8bb5b03eb0f08065b0442560441ed912",
+	//	SecretKey:     "a43174b22a98f0195f6d4ac887707210b3168cca92c44ae4ac6449ed4566d505",
+	//	Passphrase:    "Bsdk19901214123",
+	//	Symbol:        "SLERFUSDT",
+	//	Amout:         "10",
+	//	PriceScale:    0.0001,
+	//	QuantityScale: 0.01,
+	//	ActionTime:    "2024-03-18 18:00:00",
+	//	//250
+	//	SubTime: 50,
+	//}
+	//s5 := &task.GrabbingTask{
+	//	ProfitRate:    0.06,
+	//	ApiKey:        "bg_8bb5b03eb0f08065b0442560441ed912",
+	//	SecretKey:     "a43174b22a98f0195f6d4ac887707210b3168cca92c44ae4ac6449ed4566d505",
+	//	Passphrase:    "Bsdk19901214123",
+	//	Symbol:        "SLERFUSDT",
+	//	Amout:         "10",
+	//	PriceScale:    0.0001,
+	//	QuantityScale: 0.01,
+	//	ActionTime:    "2024-03-18 18:00:00",
+	//	//250
+	//	SubTime: 20,
+	//}
 
 	tasks := make([]*task.GrabbingTask, 0)
 	tasks = append(tasks, s1)
 	tasks = append(tasks, s2)
+	//tasks = append(tasks, s3)
+	//tasks = append(tasks, s4)
+	//tasks = append(tasks, s5)
 	var wg sync.WaitGroup
 	for _, t := range tasks {
 		t.Init()
@@ -43,7 +88,7 @@ func main() {
 			t.Ready()
 			var err error
 			// buy order
-			for i := 0; i < 6; i++ {
+			for i := 0; i < 5; i++ {
 				err = t.MakeBuyOrder()
 				if err == nil {
 					break
@@ -54,7 +99,7 @@ func main() {
 			}
 
 			// get order
-			for i := 0; i < 5; i++ {
+			for i := 0; i < 10; i++ {
 				err = t.GetOrder()
 				if err == nil {
 					break

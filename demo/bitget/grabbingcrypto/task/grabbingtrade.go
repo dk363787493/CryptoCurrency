@@ -89,7 +89,9 @@ func (c *GrabbingTask) MakeBuyOrder() error {
 		return err
 	}
 	if gjson.Parse(resp).Get("code").String() != "00000" {
-		return fmt.Errorf("err when buy order,%s", gjson.Parse(resp).String())
+		err = fmt.Errorf("err when buy order,%s", gjson.Parse(resp).String())
+		fmt.Println(err.Error())
+		return err
 	}
 	orderId := gjson.Parse(resp).Get("data.orderId").String()
 	fmt.Printf("success orderId:%s,resp:%s \n", orderId, resp)
@@ -110,9 +112,12 @@ func (c *GrabbingTask) GetOrder() error {
 		fmt.Println(err.Error())
 		return err
 	}
+	fmt.Printf("get order respone:%s\n", resp)
 	r := gjson.Parse(resp)
 	if r.Get("code").String() != "00000" {
-		return fmt.Errorf("err when query order,%s", r.String())
+		err = fmt.Errorf("err when query order,%s", r.String())
+		fmt.Printf("err:%s\n", err.Error())
+		return err
 	}
 	dataArr := r.Get("data").Array()
 	if len(dataArr) <= 0 {

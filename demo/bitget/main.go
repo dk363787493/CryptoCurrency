@@ -3,6 +3,7 @@ package main
 import (
 	"bitget/pkg/client"
 	v1 "bitget/pkg/client/v1"
+	"bitget/uninternal/common"
 	"errors"
 	"fmt"
 	"github.com/shopspring/decimal"
@@ -26,17 +27,17 @@ var profitRate = 0.15
 const layout = "2006-01-02 15:04:05"
 
 // success orderId
-var orderId = ""
+var orderId = "1151687424897396737"
 
 func main() {
 
 	//TimeSleep()
 
-	for i := 0; i < 10; i++ {
-		err, _ := Start()
-		if err == nil {
-			break
-		}
+	for i := 0; i < 50; i++ {
+		_, _ = Start()
+		//if err == nil {
+		//	break
+		//}
 	}
 
 }
@@ -95,10 +96,10 @@ func Start() (error, int) {
 	fmt.Printf("sell order:%+v\n", o)
 	// make a limit sell order
 
-	err = LimitSellOrder(o)
-	if err != nil {
-		return err, 3
-	}
+	//err = LimitSellOrder(o)
+	//if err != nil {
+	//	return err, 3
+	//}
 	return nil, 4
 }
 
@@ -107,11 +108,13 @@ func init() {
 	spotCli.BitgetRestClient.ApiKey = "bg_8bb5b03eb0f08065b0442560441ed912"
 	spotCli.BitgetRestClient.ApiSecretKey = "a43174b22a98f0195f6d4ac887707210b3168cca92c44ae4ac6449ed4566d505"
 	spotCli.BitgetRestClient.Passphrase = "Bsdk19901214123"
+	spotCli.BitgetRestClient.Signer = new(common.Signer).Init(spotCli.BitgetRestClient.ApiSecretKey)
 
 	cli = new(client.BitgetApiClient).Init()
 	cli.BitgetRestClient.ApiKey = "bg_8bb5b03eb0f08065b0442560441ed912"
 	cli.BitgetRestClient.ApiSecretKey = "a43174b22a98f0195f6d4ac887707210b3168cca92c44ae4ac6449ed4566d505"
 	cli.BitgetRestClient.Passphrase = "Bsdk19901214123"
+	cli.BitgetRestClient.Signer = new(common.Signer).Init(cli.BitgetRestClient.ApiSecretKey)
 }
 
 func MakertBuyOrder() (string, error) {
@@ -171,6 +174,7 @@ func GetOrder(orderId string) (Order, error) {
 		println(err.Error())
 		return Order{}, err
 	}
+	fmt.Printf("get order info:%s\n", resp)
 	r := gjson.Parse(resp)
 	if r.Get("code").String() != "00000" {
 		return Order{}, fmt.Errorf("err when query order,%s", r.String())
